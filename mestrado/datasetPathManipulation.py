@@ -367,6 +367,32 @@ def getAnnotationsPath(dataset_label, patients, abs_path=True):
     return annot_names
 
 
+def validate_dir(path):
+    """Faz a validação de um diretório. Após execução, o diretório existirá.
+
+    Recebe um caminho para um diretório. Se *path* existir, nada será feito.
+    Caso *path* não exista, será criado. Após execução de *validate_path*,
+    *path* existirá.
+
+    Parâmetros:
+    -----------
+    path: str
+        string contendo o caminho do diretório a ser validado.
+    """
+    logging.debug("Validando diretório: {}".format(path))
+
+    if not os.path.exists(path):
+        try:
+            logging.info("Criando diretório: {}".format(path))
+            os.mkdir(path)
+        except:
+            errormsg = "Não foi possível criar diretório {}".format(path)
+            logging.error(errormsg)
+            raise OSError(errormsg)
+    else:
+        logging.debug("Diretório encontrado: {}".format(path))
+
+
 def pathStructureValidation(root, subdir_list):
     """Verifica a existência e, se necessário, cria a estrutura de diretórios.
 
@@ -400,27 +426,11 @@ def pathStructureValidation(root, subdir_list):
 
     logging.debug("Validando estrutura de diretórios.")
     logging.debug("Verificando existência da raiz: {}".format(root))
-    if not os.path.exists(root):
-        try:
-            logging.debug("Diretório inexistente: {}".format(root))
-            os.mkdir(root)
-        except:
-            errormsg = "Não foi possível criar diretório {}".format(root)
-            logging.error(errormsg)
-            raise OSError(errormsg)
+    validate_dir(root)
 
     logging.debug("Percorrendo subdiretórios.")
     for subdir in subdir_list:
         path = os.path.join(root, subdir)
-        if not os.path.exists(path):
-            try:
-                logging.info("Criando diretório: {}".format(path))
-                os.mkdir(path)
-            except:
-                errormsg = "Não foi possível criar diretório {}".format(path)
-                logging.error(errormsg)
-                raise OSError(errormsg)
-        else:
-            logging.debug("Diretório encontrado: {}".format(path))
+        validate_dir(path)
 
     logging.debug("Validação da estrutura de diretórios concluída.")
