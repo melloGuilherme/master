@@ -360,7 +360,7 @@ def getAnnotationsPath(dataset_label, patients, abs_path=True):
 
     if len(annot_names) == 0:
         logging.warning("Nenhum arquivo de anotações encontrado.")
-        logging.warning("Retornando uma lista vazia.")
+        logging.warning("Retornando dicionário vazio.")
     else:
         logging.debug("Retornando arquivos de anorações encontrados.")
 
