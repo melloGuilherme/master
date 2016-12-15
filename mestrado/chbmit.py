@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import ConfigParser
 import logging
 import mne
 import os
@@ -204,3 +205,70 @@ def openEDF(edf_path, annot_dict=None):
 
     logging.debug("Retornando objeto Raw com anotações.")
     return raw
+
+
+def verifyCHBMITFiles():
+    """ Verifica quais arquivos EDF da base de dados CHBMIT abrem corretamente.
+
+    Função desenvolvida para verificar quais arquivos da base de dados CHBMIT
+    abrem corretamente. Por motivos desconhecidos, alguns arquivos EDF possuem
+    canais com rótulos repetidos e incoerentes, causando erros ao lê-los com a
+    biblioteca *mne*. Ao verificar quais arquivos podem, ou não, serem abertos,
+    imprime em um arquivo de log (se definido) quais arquivos puderam ser
+    abertos e quais não foram.
+    """
+    # cria objeto para leitura das configurações da base CHBMIT
+    cfg = ConfigParser.ConfigParser()
+    cfg.read('dataset.cfg')
+
+    # verifica existência do caminho para a base de dados
+    dataset_path = cfg.get('chbmit', 'path')
+    if not os.path.exists(dataset_path):
+        msg = ("Não foi possível encontrar a base de dados ",
+               "em {}".format(dataset_path))
+        logging.error(msg)
+        raise OSError(msg)
+
+    logging.info("Localização da base de dados: {}\n".format(dataset_path))
+
+    # seleciona as pastas de todos os pacientes (padrão: chbXX)
+    patients_label = [l for l in os.listdir(dataset_path) if not l.find("chb")]
+    patients_label.sort()
+
+    logging.debug("Pacientes encontrados:")
+    for p in patients_label:
+        logging.debug(p)
+
+    # lista de pacientes que todos os arquivos EDF abriram
+    good_data = []
+    for label in patients_label:
+        # seleciona apenas os arquivos .edf para o paciente *label*
+        patient_path = os.path.join(dataset_path, label)
+
+        logging.info("Examinando paciente em: {}".format(patient_path))
+        print "Examinando paciente em: {}".format(patient_path)
+
+        edf_list = [edf for edf in os.listdir(patient_path)
+                    if edf.lower().endswith(".edf")]
+        edf_list.sort()
+
+        logging.debug("Arquivos EDF encontrados para: {}".format(patient_path))
+        for edf in edf_list:
+            logging.debug(edf)
+
+        # verifica quais arquivos não podem ser abertos e imprime
+        for edf in [os.path.join(patient_path, edf) for edf in edf_list]:
+            can_open = True
+            try:
+                logging.debug("Abrindo edf: {}".format(edf))
+                mne.io.read_raw_edf(edf, verbose=False)
+            except:
+                logging.warning("[Erro ao abrir]: {}".format(edf))
+                can_open = False
+
+        if can_open:
+            good_data.append(label)
+
+    logging.info("Arquivos não corrompidos:")
+    for p in good_data:
+        logging.info(p)
