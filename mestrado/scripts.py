@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import chbmit
-import logDefinitions
+import argline
 import sys
+
 
 def execDatasetFileVerifier():
     """Verifica a integridade das bases de dados.
@@ -14,9 +15,9 @@ def execDatasetFileVerifier():
     Nota:
     -----
     Os parâmetros de configuração são passados por linha de comando. Para mais
-    informações, ver o módulo *logDefinitions*.
+    informações, ver o módulo *argline*.
     """
-    logDefinitions.logConfig(sys.argv[1:])
+    argline.config()
 
     print "Iniciando verificação de arquivos."
 
@@ -24,3 +25,14 @@ def execDatasetFileVerifier():
     chbmit.verifyCHBMITFiles()
 
     print "Verificação Concluída!"
+
+
+def execFourier():
+    """Executa a transformada de Fourier nas bases de dados."""
+    argline.config()
+
+    print "Iniciando Transformada de Fourier."
+
+    print "Executando base de dados CHBMIT."
+    sp = argline.OUTPUTDIR if argline.OUTPUTDIR else '.'
+    chbmit.applyFourier(patients='good', save_path=sp, exec_mode='full')
