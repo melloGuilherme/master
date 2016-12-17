@@ -1,5 +1,5 @@
 # TODO:
 
-- [ ] one
+- [x] one
 - [ ] two
 - [ ] three
