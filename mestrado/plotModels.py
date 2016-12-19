@@ -286,7 +286,7 @@ def plotChannels(signals, signals_len=None, signal_time=None, save_path=None,
     logging.debug("Finalizando plotagem.")
 
 
-def plotSpectrum(signals, signals_len=None, extent=None, save_path=None,
+def plotSpectrum(signals, xvalues, yvalues, signals_len=None, save_path=None,
                  dpi=150, **kwargs):
     """Faz a plotagem de uma imagem, na forma de mapa de cores.
 
@@ -301,12 +301,13 @@ def plotSpectrum(signals, signals_len=None, extent=None, save_path=None,
         elemento deve conter 2 dimensões para plotagem. Caso seja utilizado um
         iterador, é necessário passar a quantidade de sinais/espectros por meio
         do parâmetro *signals_len*.
+    xvalues: array_like
+        vetor com valores do eixo x (componente de tempo da STFT).
+    yvalues: array_like
+        vetor com valores do eixo y (componentes de frequência da STFT).
     signals_len: int (default: None)
         necessário quando é utilizado um iterador no parâmetro *signals*,
         representa a quantidade de sinais que serão plotados.
-    extent: [int, int, int, int] (default: None)
-        vetor com quatro posições [minX, maxX, minY, maxY], representando os
-        valores máximos e mínimos para os eixos X e Y dos subplots.
     save_path: str (default:None)
         caminho para salvar a imagem gerada. Caso não seja passado (None), será
         plotado na tela com *plt.show()*.
@@ -331,9 +332,10 @@ def plotSpectrum(signals, signals_len=None, extent=None, save_path=None,
     # TODO: axes.flat dá erro quando tem apenas 1 eixo de plotagem
     for index, (s, ax) in enumerate(zip(signals, axes.flat)):
         logging.debug("Plotando sobre eixo {}.".format(index))
-        im = ax.imshow(s, origin='lower', aspect='auto', extent=extent)
-        cbar = fig.colorbar(im, ax=ax, pad=0.02)
-        cbar.ax.tick_params(labelsize='xx-small')
+        im = ax.pcolormesh(xvalues,yvalues,s)
+        ax.axis('tight')
+        #cbar = fig.colorbar(im, ax=ax, pad=0.01)
+        #cbar.ax.tick_params(labelsize=5)
 
     if save_path is None:
         logging.debug("Exibindo imagem na tela.")
