@@ -106,7 +106,7 @@ def cleanupFiles(files):
     Utilizado para garantir execução completa dos scripts, ou seja, para saber
     quais arquivos foram criados na última execução do script.
 """
-    logging.debug("Iniciando processo de limpeza...")
+    logging.info("Iniciando processo de limpeza...")
     for f in files:
         logging.debug("Verificando existência do arquivo: {}".format(f))
         if os.path.exists(f):
