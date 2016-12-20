@@ -34,8 +34,8 @@ def stft(signal, wsize, hop):
     left = range(0, wleft, hop)         # indices inferiores das janelas
     right = range(wsize, wright, hop)   # indices superiores das janelas
 
-    csize = (wsize/2) + 1
-    windex_list = np.zeros(len(left))   # índices das janelas (amostra)
+    csize = (wsize/2) + 1               # número de coeficientes por janela
+    windex_list = np.zeros(len(left))   # índices das janelas (em amostra)
 
     # Armazena os coeficientes da STFT.
     # Cada linha corresponde aos coeficientes de uma janela
