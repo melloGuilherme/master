@@ -69,4 +69,3 @@
                 func(f, *args)
             # ...
             # verificar existência de arquivos de saída
-
