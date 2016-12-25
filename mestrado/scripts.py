@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import chbmit
+import chbmit.utils
 import argline
 import sys
 
@@ -22,17 +22,41 @@ def execDatasetFileVerifier():
     print "Iniciando verificação de arquivos."
 
     print "Verificando Base: CHBMIT."
-    chbmit.verifyCHBMITFiles()
+    chbmit.utils.verifyCHBMITFiles()
 
     print "Verificação Concluída!"
 
 
+def execSignal():
+    print "TODO: execSignal."
+
+
+def execSignalStatistics():
+    print "TODO: execSignalStatistics."
+
+
 def execFourier():
-    """Executa a transformada de Fourier nas bases de dados."""
-    argline.config()
+    print "TODO: execFourier."
+    #"""Executa a transformada de Fourier nas bases de dados."""
+    #argline.config()
 
-    print "Iniciando Transformada de Fourier."
+    #print "Iniciando Transformada de Fourier."
 
-    print "Executando base de dados CHBMIT."
-    sp = argline.OUTPUTDIR if argline.OUTPUTDIR else '.'
-    chbmit.applyFourier(patients='good', save_path=sp, exec_mode='full')
+    #print "Executando base de dados CHBMIT."
+    #sp = argline.OUTPUTDIR if argline.OUTPUTDIR else '.'
+    #chbmit.applyFourier(patients='good', save_path=sp, exec_mode='full')
+
+
+def execSTFT():
+    print "TODO: execSTFT."
+
+
+def execWT():
+    print "TODO: execWT."
+
+def execRWE():
+    print "TODO: execRWE."
+
+
+def execWS():
+    print "TODO: execWS."
