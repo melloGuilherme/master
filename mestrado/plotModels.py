@@ -4,6 +4,7 @@
 import collections
 import logging
 import matplotlib.pyplot as plt
+from matplotlib import ticker
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
@@ -71,14 +72,15 @@ def configEventBar(ax, events, pad):
     event_bar.set_yticklabels(bar_labels)
 
 
-def defaultPlotStruct(subplot_size, title=None, figsize=None,
+def defaultPlotStruct(subplot_size, title=None, figsize=None, sharey=False,
                       subplot_space=0.03, borderwidth=1, xlabel=None,
                       xticklabel_positions=None, xticklabel_values=None,
                       xtickline_visible=True, xticklabel_visible=True,
                       xtick_bins=None, xtick_size=None, ylabel=None,
                       yticklabel_positions=None, yticklabel_values=None,
                       ytickline_visible=True, yticklabel_visible=True,
-                      ytick_bins=None, ytick_size=None, events=None):
+                      ytick_bins=None, ytick_size=None, yformatter=None,
+                      events=None):
     """Cria uma estrutura de plotagem retornando uma *plt.Figure* e *plt.Axes*
 
     Fução responsável por construir a estrutura básica de plotagem, com vários
@@ -97,6 +99,8 @@ def defaultPlotStruct(subplot_size, title=None, figsize=None,
         string para o título. Posicionado na parte superior da imagem.
     figsize: (int, int) (default: None)
         largura e altura da imagem, em polegadas (inches).
+    sharey: True|False (default: False)
+        define o compartilhamento do eixo y entre *subplots*.
     subplot_space: float (default: 0.03)
         espaçamento vertical entre eixos (subplots).
     borderwidth: float (default: 1)
@@ -131,6 +135,11 @@ def defaultPlotStruct(subplot_size, title=None, figsize=None,
         define o número de bins no eixo y.
     ytick_size: float (default: None)
         define o tamanho dos ticks do eixo y, em pontos.
+    yformatter: funtion (default: None)
+        função para formatação dos rótulos no eixo y utilizando FuncFormatter.
+        Esta função deve conter dois parâmetros (referentes à posição e rótulo
+        de um *tick*) e retornar apenas um valor, o qual será utilizado para
+        definir o rótulo do *tick*.
     events: list de Event (default: None)
         lista contendo instâncias da classe Event com informações sobre eventos
         a serem marcados. Os eventos podem ser criados por meio do método
@@ -139,13 +148,13 @@ def defaultPlotStruct(subplot_size, title=None, figsize=None,
     logging.debug(("Criando estrutura de plotagem com "
                    "{} áreas.".format(subplot_size)))
 
-    fig, axes = plt.subplots(subplot_size, sharex=True, figsize=figsize)
+    fig, axes = plt.subplots(subplot_size, sharex=True, sharey=sharey, figsize=figsize)
 
     # caso exista apenas 1 subplot, axes não será iterável
     if not isinstance(axes, collections.Iterable):
         logging.debug("Tornando eixos iteráveis.")
         axes = [axes]
-
+        
     logging.debug("Iniciando configurações comuns aos eixos.")
     for index, ax in enumerate(axes):
         if ylabel is not None:
@@ -159,7 +168,7 @@ def defaultPlotStruct(subplot_size, title=None, figsize=None,
 
         plt.setp(ax.get_xticklines(), visible=xtickline_visible)
 
-        ax.ticklabel_format(style='plain', axis='both')
+        #ax.ticklabel_format(style='plain', axis='both')
 
         for ax_pos in ['top', 'bottom', 'left', 'right']:
             ax.spines[ax_pos].set_linewidth(borderwidth)
@@ -172,6 +181,9 @@ def defaultPlotStruct(subplot_size, title=None, figsize=None,
 
         ax.tick_params(axis='both', width=borderwidth)
 
+        if yformatter:
+            yfmt = ticker.FuncFormatter(yformatter)
+            ax.yaxis.set_major_formatter(yfmt)
         if ytick_bins is not None:
             logging.debug("Defindo o número de bins no eixo y.")
             ax.locator_params(axis='y', nbins=ytick_bins)
@@ -223,7 +235,7 @@ def defaultPlotStruct(subplot_size, title=None, figsize=None,
     return fig, axes
 
 
-def plotChannels(signals, signals_len=None, signal_time=None, save_path=None,
+def plotChannels(signals, signal_len=None, signal_time=None, save_path=None,
                  dpi=150, linewidth=1, **kwargs):
     """Faz a plotagem de séries temporais em subplotes separados.
 
@@ -257,24 +269,25 @@ def plotChannels(signals, signals_len=None, signal_time=None, save_path=None,
         as palavras chave restantes são propriedades da função
         *defaultPlotStruct*. Ver *defaultPlotStruct* para mais detalhes.
 """
-    if isinstance(signals, collections.Iterator) and signal_len is None:
-        errormsg = ("Para o parâmetro 'signals' ({}) é necessário passar o "
-                    "tamanho utilizando o parâmetro 'signals_len' ({})"
-                    "".format(type(signals), signals_len))
-        logging.error(errormsg)
-        raise ValueError(errormsg)
+    if isinstance(signals, collections.Iterator):
+        if signal_len is None:
+            errormsg = ("Para o parâmetro 'signals' ({}) é necessário passar o "
+                        "tamanho utilizando o parâmetro 'signal_len' ({})"
+                        "".format(type(signals), signal_len))
+            logging.error(errormsg)
+            raise ValueError(errormsg)
     else:
-        signals_len = len(signals)
+        signal_len = len(signals)
 
     logging.debug("Criando estrutura de eixos de plotagem.")
-    fig, axes = defaultPlotStruct(signals_len, **kwargs)
-
-    if signal_time is None:
-        signal_time = range(len(signals[0]))
+    fig, axes = defaultPlotStruct(signal_len, **kwargs)
 
     for index, (s, ax) in enumerate(zip(signals, axes)):
         logging.debug("Plotando sobre eixo {}.".format(index))
-        ax.plot(signal_time, s, linewidth=linewidth)
+        if signal_time is None:
+            ax.plot(s, linewidth=linewidth)
+        else:
+            ax.plot(signal_time, s, linewidth=linewidth)
 
     if save_path is None:
         logging.debug("Exibindo imagem na tela.")
@@ -332,10 +345,11 @@ def plotSpectrum(signals, xvalues, yvalues, signals_len=None, save_path=None,
     # TODO: axes.flat dá erro quando tem apenas 1 eixo de plotagem
     for index, (s, ax) in enumerate(zip(signals, axes.flat)):
         logging.debug("Plotando sobre eixo {}.".format(index))
-        im = ax.pcolormesh(xvalues,yvalues,s)
+        from matplotlib import colors
+        im = ax.pcolormesh(xvalues,yvalues,s, cmap='RdBu_r', norm=colors.PowerNorm(gamma=0.5))
         ax.axis('tight')
-        #cbar = fig.colorbar(im, ax=ax, pad=0.01)
-        #cbar.ax.tick_params(labelsize=5)
+        cbar = fig.colorbar(im, ax=ax, pad=0.01)
+        cbar.ax.tick_params(labelsize=5)
 
     if save_path is None:
         logging.debug("Exibindo imagem na tela.")
