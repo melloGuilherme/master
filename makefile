@@ -16,8 +16,12 @@ verify-dataset-file:
 execute-signal:
 	echo "TODO"
 
+execute-signal-statistics:
+	echo "TODO"
+
 execute-fourier:
-	@./$(PROJ_BIN)/execFourier --loglevel=info --logfile=$(INFO_DIR)/execFourier.log --outputdir=$(INFO_DIR)
+	echo "TODO"
+	#@./$(PROJ_BIN)/execFourier --loglevel=info --logfile=$(INFO_DIR)/execFourier.log --outputdir=$(INFO_DIR)
 
 execute-stft:
 	echo "TODO"
