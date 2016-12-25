@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import chbmit.utils
-import argline
 import sys
+
+import mestrado.chbmit.fileVerifier as chbmitFileVerifier
+
+from mestrado import argline
 
 
 def execDatasetFileVerifier():
@@ -22,7 +24,7 @@ def execDatasetFileVerifier():
     print "Iniciando verificação de arquivos."
 
     print "Verificando Base: CHBMIT."
-    chbmit.utils.verifyCHBMITFiles()
+    chbmitFileVerifier.verifyCHBMITFiles()
 
     print "Verificação Concluída!"
 
