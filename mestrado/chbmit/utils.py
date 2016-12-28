@@ -300,20 +300,24 @@ def _configFastExecution(pattern, args, ext_args):
     logging.info("Verificando se os arquivos já foram processados.")
     execute_file = False
     has_files = []
-    for arg in args:
-        if ext_args:
-            for earg in ext_args:
-                path = pattern.format(*(arg + earg))
+    if args:
+        for arg in args:
+            if ext_args:
+                for earg in ext_args:
+                    path = pattern.format(*(arg + earg))
+                    if not os.path.exists(path):
+                        execute_file = True
+                    else:
+                        has_files.append(path)
+            else:
+                path = pattern.format(*arg)
                 if not os.path.exists(path):
                     execute_file = True
                 else:
                     has_files.append(path)
-        else:
-            path = pattern.format(*arg)
-            if not os.path.exists(path):
-                execute_file = True
-            else:
-                has_files.append(path)
+    else:
+        if not os.path.exists(pattern):
+            execute_file = True
 
     if execute_file and has_files:
         pm.cleanupFiles(has_files)
@@ -353,18 +357,22 @@ def _configFullExecution(pattern, plabels, edf_dict, args, ext_args=None):
     for plabel in plabels:
         for edf_path in edf_dict[plabel]:
             edf_label = pm.extractFileLabel(edf_path)
-            for arg in args:
-                if ext_args:
-                    for earg in ext_args:
-                        f = pattern.format(plabel, edf_label, *(arg+earg))
+            if args is not None:
+                for arg in args:
+                    if ext_args:
+                        for earg in ext_args:
+                            f = pattern.format(plabel, edf_label, *(arg+earg))
+                            files.append(f)
+                    else:
+                        f = pattern.format(plabel, edf_label, *arg)
                         files.append(f)
-                else:
-                    f = pattern.format(plabel, edf_label, *arg)
-                    files.append(f)
+            else:
+                f = pattern.format(plabel, edf_label)
+                files.append(f)
     pm.cleanupFiles(files)
 
 
-def defaultScript(func, fname_pat, fargs, ext_args=None, patients='all',
+def defaultScript(func, fname_pat, fargs, ext_args=None, patients='good',
                   save_dir='output', exec_mode='full', **kwargs):
     """Execução de instruções comuns aos scripts sobre a base de dados CHBMIT.
 
@@ -460,6 +468,12 @@ def defaultScript(func, fname_pat, fargs, ext_args=None, patients='all',
     for plabel in plabels:
         logging.info("Executando dados do paciente {}".format(plabel))
 
+        logging.debug(("Extraíndo sumário de crises do paciente: {}"
+                       "".format(plabel)))
+        ppath = os.path.dirname(edf_dict[plabel][0])
+        summary_path = os.path.join(ppath, "{}-summary.txt".format(plabel))
+        summary_dict = summaryFileParser(summary_path)
+
         # percorre todos os arquivos .edf
         for edf_path in edf_dict[plabel]:
             print "Executando {}".format(edf_path)
@@ -469,33 +483,65 @@ def defaultScript(func, fname_pat, fargs, ext_args=None, patients='all',
             logging.debug("Nome do arquivo EDF: {}".format(edf_label))
 
             # nome do arquivo a ser salva a imagem
-            le = len(fargs[0])
-            if ext_args:
-                le += len(ext_args[0])
-            entries = ('{}',)*le    # mantém campos de esntrada sem formatação
-            file_pattern = save_pattern.format(plabel, edf_label, *entries)
+            if fargs:
+                le = len(fargs[0])
+                if ext_args:
+                    le += len(ext_args[0])
+
+                # mantém campos de esntrada sem formatação
+                entries = ('{}',)*le
+
+                file_pattern = save_pattern.format(plabel, edf_label, *entries)
+            else:
+                file_pattern = save_pattern.format(plabel, edf_label)
 
             # verificando se é necessário executar arquivo
             if exec_mode == 'fast':
                 to_exec = _configFastExecution(file_pattern, fargs, ext_args)
                 if not to_exec:
+                    logging.info(("Arquivo não será processado: {}"
+                                  "".format(edf_path)))
                     continue
 
             logging.info("Abrindo arquivo EDF: {}".format(edf_path))
-            raw = openEDF(edf_path)
+            raw = openEDF(edf_path, summary_dict)
 
-            for args in fargs:
-                func(raw, file_pattern, *args, ext_args=ext_args, **kwargs)
+            if fargs:
+                for args in fargs:
+                    func(raw, file_pattern, *args, ext_args=ext_args, **kwargs)
+            else:
+                func(raw, file_pattern, ext_args=ext_args, **kwargs)
 
     logging.info("Verificando existência de arquivos criados.")
     for plabel in plabels:
         for edf_path in edf_dict[plabel]:
             edf_label = pm.extractFileLabel(edf_path)
-            for args in fargs:
+            if fargs:
+                for args in fargs:
+                    if ext_args:
+                        for eargs in ext_args:
+                            img_path = save_pattern.format(plabel, edf_label,
+                                                           *(args+eargs))
+                            if os.path.exists(img_path):
+                                logging.info("Arquivo OK: {}".format(img_path))
+                            else:
+                                logging.warning("PROBLEMAS AO GERAR IMAGEM. "
+                                                "ARQUIVO NÃO ENCONTRADO: {}"
+                                                "".format(img_path))
+                    else:
+                        img_path = save_pattern.format(plabel, edf_label,
+                                                       *args)
+                        if os.path.exists(img_path):
+                            logging.info("Arquivo OK: {}".format(img_path))
+                        else:
+                            logging.warning(("PROBLEMAS AO GERAR IMAGEM. "
+                                             "ARQUIVO NÃO ENCONTRADO: {}"
+                                             "".format(img_path)))
+            else:
                 if ext_args:
                     for eargs in ext_args:
                         img_path = save_pattern.format(plabel, edf_label,
-                                                       *(args+eargs))
+                                                       *(eargs))
                         if os.path.exists(img_path):
                             logging.info("Arquivo OK: {}".format(img_path))
                         else:
@@ -503,7 +549,7 @@ def defaultScript(func, fname_pat, fargs, ext_args=None, patients='all',
                                             "ARQUIVO NÃO ENCONTRADO: {}"
                                             "".format(img_path))
                 else:
-                    img_path = save_pattern.format(plabel, edf_label, *args)
+                    img_path = save_pattern.format(plabel, edf_label)
                     if os.path.exists(img_path):
                         logging.info("Arquivo OK: {}".format(img_path))
                     else:

@@ -14,7 +14,7 @@ verify-dataset-file:
 	@./$(PROJ_BIN)/datasetFileVerifier --loglevel=info --logfile=$(INFO_DIR)/datasetFileVerifier.log
 
 execute-signal:
-	echo "TODO"
+	@./$(PROJ_BIN)/execSignal --loglevel=info --logfile=$(INFO_DIR)/execSignal.log --outputdir=$(RESULTS_DIR)
 
 execute-signal-statistics:
 	echo "TODO"
