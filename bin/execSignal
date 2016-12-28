@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+try:
+    from mestrado import scripts 
+except ImportError:
+    import sys,os
+    imp_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+    sys.path.insert(0,imp_path)
+    from mestrado import scripts
+
+if __name__ == "__main__":
+    scripts.execSignal()
