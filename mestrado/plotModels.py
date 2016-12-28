@@ -23,31 +23,57 @@ def createEvent(label, start, end, color):
         cor em que os eventos serão plotados. Podem ser tupla com os valores
         RGB ou string com uma cor válida.
     """
-    Event = collections.namedtuple('Event', ['label','start','end','color'])
+    Event = collections.namedtuple('Event', ['label', 'start', 'end', 'color'])
     e = Event(label, start, end, color)
     return e
 
 
-def configEventBar(ax, events, pad):
-    """Configura uma nova barra (eixo) e plota marcações de eventos.
+def configEventBar(fig, ax, events_len, pad=0.01, bottom=.06):
+    """Configura uma nova barra (eixo) e para plota marcações de eventos.
 
     Parâmetros:
     -----------
+    fig: Figure
+        figura gerada pela biblioteca Matplotlib.
     ax: Axes
         eixo ao qual serão inseridos eventos.
-    events: list de Event
-        lista de eventos a serem plotados. Events são criados por meio do
+    events_len: int
+        número de eventos a serem plotados. Events são criados por meio do
         método *createEvent*.
     pad: float
-        distância entre o eixo e a barra de eventos.
-    """
-    divider = make_axes_locatable(ax)
-    height = 0.08 * len(events)
-    event_bar = divider.append_axes('bottom', height, pad=pad, sharex=ax)
+        distância entre o eixo e a barra de eventos (em proporção, normalizada
+        para 1)
+    bottom: float
+        distância até a parte inferior da barra de eventos (em proporção,
+        normalizada para 1)
 
+    Retorno:
+    --------
+    matplotlib.Axes:
+        retorna uma instância de eixos, referente ao eixo da barra de eventos.
+    """
+    # pega a posição da última área de plotage
+    bbox = ax.get_position()
+
+    # extrai as posições para a barra de eventos
+    left = bbox.x0
+    height = 0.01 * events_len
+    width = bbox.width
+
+    # cria a barra de eventos, já posicionada
+    rect = [left, bottom, width, height]
+    event_bar = fig.add_axes(rect)
+
+    # ajusta as áreas de plotagem para
+    # que caiba a barra de eventos
+    vspace = bottom+height+pad
+    fig.subplots_adjust(bottom=vspace)
+
+    # configurações do eixo
     plt.setp(ax.get_xticklabels(), visible=False)
 
-    plt.setp(event_bar.get_xticklabels(), visible=True, fontsize='x-small')
+    # xonfigurações da barra de eventos
+    plt.setp(event_bar.get_xticklabels(), visible=True, fontsize='xx-small')
     plt.setp(event_bar.get_yticklabels(), visible=True, fontsize=6)
     plt.setp(event_bar.get_yticklines(), visible=False)
 
@@ -57,19 +83,45 @@ def configEventBar(ax, events, pad):
 
     event_bar.xaxis.set_ticks_position('bottom')
 
+    return event_bar
+
+
+def plotEventBar(ebar, events, xlim=None):
+    """Plota eventos em uma barra de eventos já configurada.
+
+    Parâmetros:
+    -----------
+    ebar: Axes
+        barra de plotagem (Axes) já configurada. Gerada a partir do método
+        *configEventBar*.
+    events: list de Event
+        lista contendo os eventos a serem plotados.
+    xlim: (int, int) (default: None)
+        tupla, ou lista, de dois elementos. Correspondendo aos valores mínimo
+        e máximo que definem um intervalo para o eixo x.
+    """
     bar_labels = []
+
+    # percorre eventos
     for idx, ev in enumerate(events):
+        # percorre ocorrências. Um evento pode ter mais de uma ocorrência para
+        # ser marcada em um único sinal.
         for occ in zip(ev.start, ev.end):
             start = occ[0]
             end = occ[1]
             duration = end-start
-            event_bar.barh(idx, duration, height=1, left=start, alpha=0.65,
-                           facecolor=ev.color, edgecolor=ev.color)
+            # plotagem de uma barra horizontal
+            ebar.barh(idx, duration, height=1, left=start, alpha=0.65,
+                      facecolor=ev.color, edgecolor=ev.color)
 
         bar_labels.append(ev.label)
 
-    event_bar.set_yticks([i+0.5 for i in range(len(bar_labels))])
-    event_bar.set_yticklabels(bar_labels)
+    # configurações de plotagem dos rótulos do eixo y
+    ebar.set_yticks([i+0.5 for i in range(len(bar_labels))])
+    ebar.set_yticklabels(bar_labels)
+
+    if xlim:
+        ebar.set_xlim(xlim)
 
 
 def defaultPlotStruct(subplot_size, title=None, figsize=None, sharey=False,
@@ -80,7 +132,7 @@ def defaultPlotStruct(subplot_size, title=None, figsize=None, sharey=False,
                       yticklabel_positions=None, yticklabel_values=None,
                       ytickline_visible=True, yticklabel_visible=True,
                       ytick_bins=None, ytick_size=None, yformatter=None,
-                      events=None):
+                      events_len=None, xformatter=None):
     """Cria uma estrutura de plotagem retornando uma *plt.Figure* e *plt.Axes*
 
     Fução responsável por construir a estrutura básica de plotagem, com vários
@@ -148,13 +200,14 @@ def defaultPlotStruct(subplot_size, title=None, figsize=None, sharey=False,
     logging.debug(("Criando estrutura de plotagem com "
                    "{} áreas.".format(subplot_size)))
 
-    fig, axes = plt.subplots(subplot_size, sharex=True, sharey=sharey, figsize=figsize)
+    fig, axes = plt.subplots(subplot_size, sharex=True, sharey=sharey,
+                             figsize=figsize)
 
     # caso exista apenas 1 subplot, axes não será iterável
     if not isinstance(axes, collections.Iterable):
         logging.debug("Tornando eixos iteráveis.")
         axes = [axes]
-        
+
     logging.debug("Iniciando configurações comuns aos eixos.")
     for index, ax in enumerate(axes):
         if ylabel is not None:
@@ -167,8 +220,6 @@ def defaultPlotStruct(subplot_size, title=None, figsize=None, sharey=False,
         plt.setp(ax.get_yticklabels(), visible=yticklabel_visible, fontsize=4)
 
         plt.setp(ax.get_xticklines(), visible=xtickline_visible)
-
-        #ax.ticklabel_format(style='plain', axis='both')
 
         for ax_pos in ['top', 'bottom', 'left', 'right']:
             ax.spines[ax_pos].set_linewidth(borderwidth)
@@ -184,6 +235,7 @@ def defaultPlotStruct(subplot_size, title=None, figsize=None, sharey=False,
         if yformatter:
             yfmt = ticker.FuncFormatter(yformatter)
             ax.yaxis.set_major_formatter(yfmt)
+
         if ytick_bins is not None:
             logging.debug("Defindo o número de bins no eixo y.")
             ax.locator_params(axis='y', nbins=ytick_bins)
@@ -199,27 +251,7 @@ def defaultPlotStruct(subplot_size, title=None, figsize=None, sharey=False,
                 ax.set_yticks(yticklabel_positions)
 
     logging.debug("Iniciando configurações gerais.")
-
-    logging.debug("Definindo configurações das marcações do eixo x.")
-    if xtick_bins is not None:
-        logging.debug("Defindo o número de bins no eixo x.")
-        ax.locator_params(axis='x', nbins=xtick_bins)
-    elif xticklabel_values is not None and xticklabel_positions is not None:
-        # TODO: esta parte está causando erro no plot. Está configurando apenas
-        #       no último plot, enquanto some com as marcações dos outros
-        logging.debug("Definindo posições e valores das marcações no eixo x.")
-        plt.xticks(xticklabel_positions, xticklabel_values)
-
-    plt.setp(axes[-1].get_xticklabels(), fontsize='xx-small',
-             visible=xticklabel_visible)
-
-    if xlabel is not None:
-        logging.debug("Definindo rótulo do eixo x.")
-        axes[-1].set_xlabel(xlabel.decode('utf-8'), fontsize='x-small')
-
-    # configurando barra de eventos
-    if events is not None:
-        configEventBar(axes[-1], events, subplot_space)
+    ax = axes[-1]
 
     # melhora o espaçamento do plot
     plt.tight_layout()
@@ -232,11 +264,42 @@ def defaultPlotStruct(subplot_size, title=None, figsize=None, sharey=False,
         plt.subplots_adjust(top=0.95)
         plt.suptitle(title.decode('utf-8'), fontsize='medium', visible=True)
 
-    return fig, axes
+    # configurando barra de eventos
+    event_bar = None
+    if events_len is not None and events_len > 0:
+        event_bar = ax = configEventBar(fig, ax, events_len)
+        plt.setp(ax.get_xticklines(), visible=xtickline_visible)
+        ax.spines['bottom'].set_linewidth(borderwidth)
+        if xtick_size is not None:
+            ax.tick_params(axis='x', length=xtick_size)
+        ax.tick_params(axis='both', width=borderwidth)
+
+    if xformatter:
+        xfmt = ticker.FuncFormatter(xformatter)
+        ax.xaxis.set_major_formatter(xfmt)
+
+    if xlabel is not None:
+        logging.debug("Definindo rótulo do eixo x.")
+        ax.set_xlabel(xlabel.decode('utf-8'), fontsize='x-small')
+
+    logging.debug("Definindo configurações das marcações do eixo x.")
+    if xtick_bins is not None:
+        logging.debug("Defindo o número de bins no eixo x.")
+        ax.locator_params(axis='x', nbins=xtick_bins)
+    elif xticklabel_values is not None and xticklabel_positions is not None:
+        # TODO: esta parte está causando erro no plot. Está configurando apenas
+        #       no último plot, enquanto some com as marcações dos outros
+        logging.debug("Definindo posições e valores das marcações no eixo x.")
+        plt.xticks(xticklabel_positions, xticklabel_values)
+
+    plt.setp(ax.get_xticklabels(), fontsize='xx-small',
+             visible=xticklabel_visible)
+
+    return fig, axes, event_bar
 
 
 def plotChannels(signals, signal_len=None, signal_time=None, save_path=None,
-                 dpi=150, linewidth=1, **kwargs):
+                 dpi=150, linewidth=1, events=None, **kwargs):
     """Faz a plotagem de séries temporais em subplotes separados.
 
     Função responsável pela plotagem de séries temporais de uma dimensão, como:
@@ -271,8 +334,8 @@ def plotChannels(signals, signal_len=None, signal_time=None, save_path=None,
 """
     if isinstance(signals, collections.Iterator):
         if signal_len is None:
-            errormsg = ("Para o parâmetro 'signals' ({}) é necessário passar o "
-                        "tamanho utilizando o parâmetro 'signal_len' ({})"
+            errormsg = ("Para o parâmetro 'signals' ({}) é necessário passar "
+                        "o tamanho utilizando o parâmetro 'signal_len' ({})"
                         "".format(type(signals), signal_len))
             logging.error(errormsg)
             raise ValueError(errormsg)
@@ -280,7 +343,9 @@ def plotChannels(signals, signal_len=None, signal_time=None, save_path=None,
         signal_len = len(signals)
 
     logging.debug("Criando estrutura de eixos de plotagem.")
-    fig, axes = defaultPlotStruct(signal_len, **kwargs)
+    events_len = 0 if events is None else len(events)
+    fig, axes, event_bar = defaultPlotStruct(signal_len, events_len=events_len,
+                                             **kwargs)
 
     for index, (s, ax) in enumerate(zip(signals, axes)):
         logging.debug("Plotando sobre eixo {}.".format(index))
@@ -288,6 +353,10 @@ def plotChannels(signals, signal_len=None, signal_time=None, save_path=None,
             ax.plot(s, linewidth=linewidth)
         else:
             ax.plot(signal_time, s, linewidth=linewidth)
+
+    if event_bar and events:
+        xlim = axes[-1].get_xlim()
+        plotEventBar(event_bar, events, xlim)
 
     if save_path is None:
         logging.debug("Exibindo imagem na tela.")
@@ -346,7 +415,8 @@ def plotSpectrum(signals, xvalues, yvalues, signals_len=None, save_path=None,
     for index, (s, ax) in enumerate(zip(signals, axes.flat)):
         logging.debug("Plotando sobre eixo {}.".format(index))
         from matplotlib import colors
-        im = ax.pcolormesh(xvalues,yvalues,s, cmap='RdBu_r', norm=colors.PowerNorm(gamma=0.5))
+        im = ax.pcolormesh(xvalues, yvalues, s, cmap='RdBu_r',
+                           norm=colors.PowerNorm(gamma=0.5))
         ax.axis('tight')
         cbar = fig.colorbar(im, ax=ax, pad=0.01)
         cbar.ax.tick_params(labelsize=5)
