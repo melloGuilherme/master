@@ -14,18 +14,20 @@
 - [ ] Escrever um relatório
 
 ## DOING: Plotagem de sinais
-- [ ] Plotar o sinal inteiro
+- [x] Plotar o sinal inteiro
 - [ ] Plotar o sinal em janelas (default: 10min)
 - [ ] Plotar o sinal mostrando o momento da crise, utilizando intervalos antes
   e depois (default: 1min)
+- [ ] Documentar código de plotagem do sinal
+- [ ] Verificar documentação dos códigos de plotagem (plotModels)
 
 
 
 ## ASAP:
 - [ ] Verificar escala de cores na plotagem dos espectros
 - [ ] Melhorar a plotagem da barra de escalas
-- [x] Testar a função defaultScript
-- [x] Documentar a função defaultScript
+- [ ] Testar a função defaultScript
+- [ ] Documentar a função defaultScript
 - [ ] Desenvolver função para plotar STFT
 - [ ] Desenvolver função para STFT
 - [ ] Inserir anotações
