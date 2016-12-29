@@ -19,7 +19,7 @@ execute-wsignal:
 	@./$(PROJ_BIN)/execWindowedSignal --loglevel=info --logfile=$(INFO_DIR)/execWindowedSignal.log --outputdir=$(RESULTS_DIR)
 
 execute-seizure-signal:
-	echo "TODO"
+	@./$(PROJ_BIN)/execSeizureSignal --loglevel=info --logfile=$(INFO_DIR)/execSeizureSignal.log --outputdir=$(RESULTS_DIR)
 
 execute-signal-statistics:
 	echo "TODO"

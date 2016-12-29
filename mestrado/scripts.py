@@ -77,7 +77,24 @@ def execWindowedSignal():
 
 
 def execSeizureSignal():
-    print "TODO: execSeizureSignal."
+    """Plotagem das crises presentes nos sinais."""
+    import chbmit.signal
+    import chbmit.utils
+
+    argline.config()
+
+    print "Plotando crises da base CHBMIT."
+    f = chbmit.signal.plotCHBMITSizures
+    fpattern = '{}_S{}-{}.png'
+    fargs = None
+    eargs = [('{}',)*2]
+
+    save_dir = argline.OUTPUTDIR if argline.OUTPUTDIR else '.'
+
+    chbmit.utils.defaultScript(f, fpattern, fargs, eargs, 'chb01',
+                               save_dir, None)
+
+    print "Plotagem das crises da base CHBMIT concluída."
 
 
 def execSignalStatistics():

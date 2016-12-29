@@ -45,18 +45,22 @@ def plotCHBMITSignal(raw, file_pattern, ext_args=None):
     logging.debug(("Definindo função de formatação dos rótulos dos traços nos "
                    "eixos x e y."))
 
-    def y_fmt(x, y):
-        return "{}$\mu$V".format(int(x*1e6))
-
-    def x_fmt(x, y):
-        return "{:.2f}".format(x/(raw.info['sfreq']*60))
-
     edf_label = pm.extractFileLabel(file_pattern)
     logging.debug("Gerando plot para {}.".format(edf_label))
     title = "Signal {}".format(edf_label)
     ylabels = raw.ch_names
     ylabels.append('AVG')
     xlabel = 'Time [minutes]'
+
+    def y_fmt(x, y):
+        return "{}$\mu$V".format(int(x*1e6))
+
+    def x_fmt(x, y):
+        s, r = divmod(x, raw.info['sfreq'])     # segundos
+        ms = r/float(raw.info['sfreq'])         # milissegundos
+        m, s = divmod(int(s), 60)               # minutos
+        h, m = divmod(m, 60)                    # hora
+        return "{:02d}:{:02d}:{:02.3f}".format(h, m, (s+ms))
 
     pltm.plotChannels(channel_list, signal_len=channel_len, events=events,
                       sharey=True, xformatter=x_fmt, yformatter=y_fmt, dpi=600,
@@ -123,7 +127,11 @@ def plotCHBMITWindowedSignals(raw, file_pattern, wsize, ext_args=None):
             return "{}$\mu$V".format(int(x*1e6))
 
         def x_fmt(x, y):
-            return "{:.2f}".format(x/(raw.info['sfreq']*60))
+            s, r = divmod(x, raw.info['sfreq'])     # segundos
+            ms = r/float(raw.info['sfreq'])         # milissegundos
+            m, s = divmod(int(s), 60)               # minutos
+            h, m = divmod(m, 60)                    # hora
+            return "{:02d}:{:02d}:{:02.3f}".format(h, m, (s+ms))
 
         # TODO: melhorar isso aqui ----v
         save_path = file_pattern.format(int(float(x_fmt(wsize, 0))),
@@ -145,30 +153,80 @@ def plotCHBMITWindowedSignals(raw, file_pattern, wsize, ext_args=None):
                           dpi=600, borderwidth=0.2, save_path=save_path)
 
 
-def plotCHBMITSizures(raw, file_pattern, fargs, ext_args=None):
-    pass
+def plotCHBMITSizures(raw, file_pattern, ext_args=None):
+    """Plotagem das crises presentes no sinal, se existirem.
 
+    Recebe informações sobre um sinal e plota os momentos de crise presentes no
+    sinal, se existirem.
 
-if __name__ == "__main__":
-    from mestrado import argline
-    from mestrado.chbmit import utils
-    # pattern: {}_T{}.png
-    # pattern: {}_S{}.png
+    Parâmetros:
+    -----------
+    raw: mne.Raw
+        objeto *Raw* contendo informações sobre o sinal.
+    file_pattern: str
+        string contendo o padrão para salvar os arquivos gerados por este
+        script. Se necessário, deve conter campos para formatação.
+    ext_args: não é usado (default: None)
+        parâmetro utilizado para que esta função seja compatível com
+        *defaultScript*.
+    """
+    if not raw.annotations:
+        logging.info(("Arquivo não contém anotações de crises. "
+                      "Não será executado."))
+        return
 
-    argline.config()
+    logging.info("Executando plotagem das crises de epilepsia.")
+    annot = raw.annotations
+    elabel = annot.description[0]
+    estart = annot.onset*raw.info['sfreq']
+    eend = annot.duration*raw.info['sfreq'] + estart
 
-    plabel = 'chb01'
-    edf_label = '{}_03'.format(plabel)
+    data = raw._data
+    avg = np.mean(data, axis=0)
+    for idx, (start, end) in enumerate(zip(estart, eend)):
+        # selecionando até 30s antes da crise
+        ws = start - raw.info['sfreq']*60
+        ws = int(ws) if ws > 0 else 0
 
-    edf_path = ('/home/mello/Biblioteca/datasets/chbmit/{}/{}.edf'
-                ''.format(plabel, edf_label))
-    sum_path = ('/home/mello/Biblioteca/datasets/chbmit/{}/{}-summary.txt'
-                ''.format(plabel, plabel))
+        # selecionando até 30s depois da crise
+        wf = end + raw.info['sfreq']*60
+        wf = int(wf) if wf < len(raw) else len(raw)
 
-    annot_dict = utils.summaryFileParser(sum_path)
-    raw = utils.openEDF(edf_path, annot_dict)
+        # extrai a janela para plotagem
+        window = data[:, ws:wf]
+        wavg = avg[ws:wf]
 
-    fpattern = '{}_T{}-{}.png'.format(edf_label, '{}', '{}')
-    wsize = int(10*60*raw.info['sfreq'])     # 10 minutos
+        # cria iterado para plotagem
+        signals = itt.chain(window, [wavg])
+        signals_len = len(window) + 1
 
-    plotCHBMITWindowedSignals(raw, fpattern, wsize, edf_label=edf_label)
+        # cria um evento contendo apenas uma crise
+        event = pltm.createEvent(elabel, [start], [end], 'red')
+
+        # parâmetros de configuração do plot
+        sd = (end-start)/raw.info['sfreq']  # duração da crise, em segundos
+        title = file_pattern.format(idx, '{}s'.format(sd))
+        title = pm.extractFileLabel(title)
+        xlabel = "Time"
+        ylabels = raw.ch_names
+        ylabels.append('AVG')
+        signal_time = range(ws, wf)
+        save_path = file_pattern.format(idx, '{}s'.format(sd))
+
+        def y_fmt(x, y):
+            return "{}$\mu$V".format(int(x*1e6))
+
+        def x_fmt(x, y):
+            s, r = divmod(x, raw.info['sfreq'])     # segundos
+            ms = r/float(raw.info['sfreq'])         # milissegundos
+            m, s = divmod(int(s), 60)               # minutos
+            h, m = divmod(m, 60)                    # hora
+            return "{:02d}:{:02d}:{:02.3f}".format(h, m, (s+ms))
+
+        # plotagem do sinal selecionado
+        pltm.plotChannels(signals, signals_len, sharey=True, xlabel=xlabel,
+                          ylabel=ylabels, title=title, xformatter=x_fmt,
+                          yformatter=y_fmt, events=[event],
+                          signal_time=signal_time, ytick_bins=4,
+                          linewidth=0.2, xtick_size=2, ytick_size=2,
+                          dpi=600, borderwidth=0.2, save_path=save_path)
