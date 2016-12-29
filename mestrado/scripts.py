@@ -69,7 +69,7 @@ def execWindowedSignal():
     # exec_mode=None é utilizado por não existir suporte para limpeza de
     # arquivos que utilizam argumentos de plotagem (ext_args), como os índices
     # dos limites das janelas plotadas. TODO: inserir suporte
-    chbmit.utils.defaultScript(f, fpattern, fargs, patients='chb01',
+    chbmit.utils.defaultScript(f, fpattern, fargs, patients='good',
                                ext_args=eargs, save_dir=save_dir,
                                exec_mode=None)
 
