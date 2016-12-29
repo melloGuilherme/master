@@ -10,6 +10,7 @@ import sys
 # variáveis globais
 OUTPUTDIR = None    # caminho para diretório de arquivos gerados
 
+
 def _configLogLevel(log_level):
     """Configuração do nível de log.
 
@@ -42,12 +43,19 @@ def _configLogFile(fname):
 
     fh = logging.FileHandler(fname, mode='w')
     fh.setFormatter(formatter)
-    
+
     log.addHandler(fh)
 
 
 def _configOutputDir(path):
-    """Configura um diretório para salvar arquivos gerados."""
+    """Configura um diretório para salvar arquivos gerados.
+
+    Parâmetros:
+    -----------
+    path: str
+        string contendo o caminho para um diretório existente. Caso o diretório
+        não exista, a execução será abortada.
+    """
     global OUTPUTDIR
     if os.path.exists(path):
         OUTPUTDIR = path
@@ -79,7 +87,6 @@ def config():
     # configurações básicas de log
     log_format = "%(levelname)s(%(funcName)s):\t%(message)s"
     log_level = logging.INFO
-    #logging.basicConfig(level=log_level, format=log_format)
 
     # extração e tratamento das opções desejadas
     for opt, value in opts:
@@ -105,4 +112,6 @@ def usage():
     print "\t\tdefault: 'info'."
     print "\n\t--logfile:\toutput log file."
     print "\t\tdefault: console."
+    print "\n\t--outputdir:\troot directory for saving script's output."
+    print "\t\tdefault: '.'"
     sys.exit(2)

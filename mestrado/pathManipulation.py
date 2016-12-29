@@ -74,6 +74,8 @@ def pathStructureValidation(root, subdir_list):
     logging.debug("Validação da estrutura de diretórios concluída.")
 
 
+# TODO: dá erro quando um arquivo tem '.' (ponto) no meio do nome, além do
+# separador com a extensão.
 def extractFileLabel(fname):
     """Extrai apenas o nome dos arquivos, removendo extensão e caminho.
 

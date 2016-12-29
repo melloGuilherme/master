@@ -265,6 +265,8 @@ def getCHBMITFilesPath(patients='all'):
     return edf_dict
 
 
+# TODO: não suporta casos em que os argumentos extras não são previamente
+# conhecidos. Alguns precisam abrir o EDF e calcular estes argumentos.
 def _configFastExecution(pattern, args, ext_args):
     """Verifica se um arquivo deve ser executado, retornando um booleando.
 
@@ -325,6 +327,8 @@ def _configFastExecution(pattern, args, ext_args):
     return execute_file
 
 
+# TODO: não suporta casos em que os argumentos extras não são previamente
+# conhecidos. Alguns precisam abrir o EDF e calcular estes argumentos.
 def _configFullExecution(pattern, plabels, edf_dict, args, ext_args=None):
     """Remove arquivos já existentes que sejam compativeis com o padrão.
 
@@ -335,7 +339,7 @@ def _configFullExecution(pattern, plabels, edf_dict, args, ext_args=None):
         com argumentos em *args*. Deve ser o padrão do caminho completo, com
         campos de formatação para rótulo do paciente, rótulo do arquivo e
         parâmetros de execução e plotagem. Ex: './root/{}/{}_FT{}_E{}.png'
-    plabel: list
+    plabels: list
         lista de strings contendo apenas os rótulos dos pacientes.
     edf_dict: dict
         dicionário contendo os rótulos dos pacientes como chave, e uma lista
@@ -346,7 +350,7 @@ def _configFullExecution(pattern, plabels, edf_dict, args, ext_args=None):
         elemento da lista é uma tupla contendo os argumentos necessários para
         formatação (parâmetros para computação de cálculos, passados como
         parâmetros para outras funções).
-    ext_args: list de (arg1, arg2, ...)
+    ext_args: list de (arg1, arg2, ...) (default: None)
         lista de argumentos extras, também utilizados para formatar o padrão do
         arquivo de saída. Porém, estes são formatados ao final do padrão e não
         são utilizados para configurar outras funções (utilizados para
@@ -512,6 +516,7 @@ def defaultScript(func, fname_pat, fargs, ext_args=None, patients='good',
             else:
                 func(raw, file_pattern, ext_args=ext_args, **kwargs)
 
+    # TODO: Melhorar a verificação de arquivos gerados (código muito ruim)
     logging.info("Verificando existência de arquivos criados.")
     for plabel in plabels:
         for edf_path in edf_dict[plabel]:

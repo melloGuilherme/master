@@ -15,59 +15,52 @@
 
 ## DOING: Plotagem de sinais
 - [x] Plotar o sinal inteiro
-- [ ] Plotar o sinal em janelas (default: 10min)
+- [x] Plotar o sinal em janelas (default: 10min)
 - [ ] Plotar o sinal mostrando o momento da crise, utilizando intervalos antes
   e depois (default: 1min)
 - [ ] Documentar código de plotagem do sinal
 - [ ] Verificar documentação dos códigos de plotagem (plotModels)
 
-
-
 ## ASAP:
 - [ ] Verificar escala de cores na plotagem dos espectros
-- [ ] Melhorar a plotagem da barra de escalas
-- [ ] Testar a função defaultScript
-- [ ] Documentar a função defaultScript
-- [ ] Desenvolver função para plotar STFT
-- [ ] Desenvolver função para STFT
-- [ ] Inserir anotações
-- [ ] Documentar função para STFT
-- [ ] Desenvolver script para STFT (com plotagem de 5/10 min)
-- [ ] Documentar script para STFT
-- [ ] pep8, commit e push
-- [ ] Desenvolver função para plotar sinal
-- [ ] Documentar função para plotar sinal
-- [ ] Desenvolver script para plotar os sinais
-- [ ] Documentar script para plotar sinais
-- [ ] pep8, commit e push
 
 
-## ASAP 2
-- [ ] (18) desenvolver script para wavelet
-- [ ] (19) ler artigo: Wavelet analysis...
-- [ ] (19) desenvolver função: relative wavelet energy
-- [ ] (19) desenvolver função: wavelet entropy
-- [ ] (19) incorporar novas medidas ao script wavelet
-- [ ] (19) executar fourier
-- [ ] (19) executar STFT
-- [ ] (19) executar wavelet (todos)
-- [ ] (20) Apresentação em LaTeX para a reunião
-- [ ] (20) verificar energia do sinal
-- [ ] (21) Quarta (21/12) 10:00 -- Reunião
-- [ ] Refatorar applyFourier
 
-## DONE:
-- [x] Criar uma função 'esqueleto' para execução dos scripts. A ideia consiste
-        em executar o processo de leitura dos arquivos de entrada e verificar
-        a existência dos arquivos de saída em uma única função ('esqueleto').
-        Esta função recebe uma outra função, a qual irá executar algum tipo de
-        operação sobre um único arquivo. Exemplo:
+## BUGS - Em algum momento:
+### dataset.cfg
+- [ ] Mudar o modo como o ConfigParser lê os valores do arquivo de configuração
+  para remover '\n' e dividir os valores por ','. Atualmente não está removendo
+  as quebras de linha.
 
-        def esqueleto(params, fun, args):
-            # leitura de arquivos utilizando *param*
-            # verificar modo de execução
-            # ...
-            for f in files:
-                func(f, *args)
-            # ...
-            # verificar existência de arquivos de saída
+### mestrado/chbmit/utils.py
+- [ ] mestrado.chbmit.utils._configFastExecution_ e _configFullExecution_ não
+  possuem suporte para os casos em que os padrões de plotagem são
+  desconhecidos. Uma das possibilidades é utilizar ext_args com o valor None, o
+  que causa um erro ao tentar verificar os arquivos criados. Outra forma é
+  utilizar orientação a objetos, criando uma classe para o script padrão
+  (defaultScript) e outras classes que herdam desta, porém com funções
+  específicas (sobreescrita de métodos) para verificar os arquivos de uma forma
+  própria.
+- [ ] mestrado.chbmit.utils.defaultScript precisa melhorar a parte da função
+  que verifica os arquivos já criados. O código está repetido.
+
+### mestrado/chbmit/signal.py
+- [ ] mestrado.chbmit.signal.plotCHBMITWindowedSignal: melhorar a forma como o
+  caminho para salvar o arquivo é gerado. Foi feita uma gambiarra para
+  funcionar e pode ser que em alguns casos aquilo dê erro.
+
+### mestrado/pathManipulation.py
+- [ ] mestrado.pathManipulation.extractFileLabel: faz split utilizando '.'
+  (ponto), por isso pode dar errado em algum momento. Casos em que o arquivo
+  tem outros '.' além do separador com a extensão.
+
+### mestrado/scripts.py
+- [ ] mestrado.scripts.execWindowedSignal: inserir suporte para modo de
+  execução (exec_mode). Atualmente não está verificando os arquivos gerados.
+
+### mestrado/plotModels.py
+- [ ] mestrado.plotModels.defaultPlotStructure: está dando erro ao inserir os
+  ticks manualmente, define os rótulos e a posição dos ticks da última área de
+  plotagem, porém some com os ticks das outras áreas.
+- [ ] mestrado.plotModels.plotSpectrum: axes.flat está dando erro quando tem
+  apenas um eixo para plotagem.
