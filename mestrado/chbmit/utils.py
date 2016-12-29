@@ -498,6 +498,11 @@ def defaultScript(func, fname_pat, fargs, ext_args=None, patients='good',
                 entries = ('{}',)*le
 
                 file_pattern = save_pattern.format(plabel, edf_label, *entries)
+            elif ext_args:
+                le = len(ext_args[0])
+                entries = ('{}',)*le
+
+                file_pattern = save_pattern.format(plabel, edf_label, *entries)
             else:
                 file_pattern = save_pattern.format(plabel, edf_label)
 
