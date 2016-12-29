@@ -11,4 +11,4 @@ except ImportError:
     from mestrado import scripts
 
 if __name__ == "__main__":
-    scripts.execDatasetFileVerifier()
+    scripts.execWT()
