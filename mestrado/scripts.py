@@ -45,7 +45,39 @@ def execSignal():
 
     save_dir = argline.OUTPUTDIR if argline.OUTPUTDIR else '.'
     chbmit.utils.defaultScript(f, fpattern, fargs=None, patients='good',
-                               save_dir=save_dir, exec_mode='full')
+                               save_dir=save_dir, exec_mode=None)
+
+    print "Plotagem dos sinais completos concluída."
+
+
+def execWindowedSignal():
+    """Plotagem dos sinais em janelas."""
+    import chbmit.signal
+    import chbmit.utils
+
+    argline.config()
+
+    f = chbmit.signal.plotCHBMITWindowedSignals
+    fpattern = "{}_signal_T{}-{}-{}.png"
+
+    wsize = int(10*60*256)     # 10 minutos
+    fargs = [(wsize,)]
+    eargs = [('{}',)*3]
+
+    save_dir = argline.OUTPUTDIR if argline.OUTPUTDIR else '.'
+
+    # exec_mode=None é utilizado por não existir suporte para limpeza de
+    # arquivos que utilizam argumentos de plotagem (ext_args), como os índices
+    # dos limites das janelas plotadas. TODO: inserir suporte
+    chbmit.utils.defaultScript(f, fpattern, fargs, patients='chb01',
+                               ext_args=eargs, save_dir=save_dir,
+                               exec_mode=None)
+
+    print "Plotagem dos sinais em janelas concluída."
+
+
+def execSeizureSignal():
+    print "TODO: execSeizureSignal."
 
 
 def execSignalStatistics():

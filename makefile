@@ -9,12 +9,17 @@ INFO_DIR = $(RESULTS_DIR)/info
 
 
 
-# para vefiricar se os arquivos das bases de dados estão sendo abertos
 verify-dataset-file:
 	@./$(PROJ_BIN)/datasetFileVerifier --loglevel=info --logfile=$(INFO_DIR)/datasetFileVerifier.log
 
 execute-signal:
 	@./$(PROJ_BIN)/execSignal --loglevel=info --logfile=$(INFO_DIR)/execSignal.log --outputdir=$(RESULTS_DIR)
+
+execute-wsignal:
+	@./$(PROJ_BIN)/execWindowedSignal --loglevel=info --logfile=$(INFO_DIR)/execWindowedSignal.log --outputdir=$(RESULTS_DIR)
+
+execute-seizure-signal:
+	echo "TODO"
 
 execute-signal-statistics:
 	echo "TODO"

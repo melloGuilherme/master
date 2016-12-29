@@ -28,7 +28,66 @@ def createEvent(label, start, end, color):
     return e
 
 
-def configEventBar(fig, ax, events_len, pad=0.01, bottom=.06):
+def getEventAtWindow(event, wsi, wfi):
+    """Retorna um objeto *Event*, com informações correspondentes a uma janela.
+
+    Recebe um objeto *Event* e os valores de início e fim da janela de tempo de
+    interesse. Extrai as informações deste evento contidas no intervalo de
+    tempo desejado, retornando um novo objeto *Event*. Caso não existam
+    informações sobre o evento dentro do intervalo desejado, será retornado
+    None. Utilizando a notação de intervalos, o conteúdo da janela é dado por
+    [wsi,wfi).
+
+    Parâmetros:
+    -----------
+    event: Event
+        Objeto do tipo *Event*.
+    wsi: int
+        índice do limite inferior da janela (em amostras).
+    wfi: int
+        índice do limite superior da janela (em amostras). Este valor não está
+        incluso na janela, ou seja, [wsi,wfi)
+
+    Retorno:
+    --------
+    Event ou None:
+        caso existam informações dentro do intervalo de tempo desejado, será
+        retornado um *Event*, caso contrário, será retornado None.
+    """
+    s = []  # tempos de início dos eventos
+    f = []  # tempos de término dos eventos
+    for start, end in zip(event.start, event.end):
+        # caso 1: o evento começa na janela
+        if start > wsi and start < wfi:
+            s.append(start)
+            if end < wfi:
+                f.append(end)
+            else:
+                f.append(wfi)
+        # caso 2: o evento ocorre por toda a janela
+        elif start < wsi and end > wfi:
+            s.append(wsi)
+            f.append(wfi)
+        # caso 3: o evento termina na janela. OBS.: Se entrar aqui, o evento
+        # sempre começará em uma janela anterior, pois se começar nesta janela,
+        # entrará no caso 1.
+        elif end > wsi and end < wfi:
+            s.append(wsi)
+            f.append(end)
+
+    if len(f) != len(s):
+        msg = "Erro ao criar evento para uma janela."
+        logging.error(msg)
+        raise ValueError
+    elif len(f) == 0 and len(s) == 0:
+        wevent = None
+    else:
+        wevent = createEvent(event.label, s, f, event.color)
+
+    return wevent
+
+
+def configEventBar(fig, ax, events_len, pad=0.01, bottom=0.06):
     """Configura uma nova barra (eixo) e para plota marcações de eventos.
 
     Parâmetros:
@@ -40,10 +99,10 @@ def configEventBar(fig, ax, events_len, pad=0.01, bottom=.06):
     events_len: int
         número de eventos a serem plotados. Events são criados por meio do
         método *createEvent*.
-    pad: float
+    pad: float (default: 0.01)
         distância entre o eixo e a barra de eventos (em proporção, normalizada
         para 1)
-    bottom: float
+    bottom: float (default: 0.06)
         distância até a parte inferior da barra de eventos (em proporção,
         normalizada para 1)
 
@@ -196,6 +255,11 @@ def defaultPlotStruct(subplot_size, title=None, figsize=None, sharey=False,
         lista contendo instâncias da classe Event com informações sobre eventos
         a serem marcados. Os eventos podem ser criados por meio do método
         *createEvent*.
+    xformatter: function (default: None)
+        função para formatação dos rótulos no eixo x utilizando FuncFormatter.
+        Esta função deve conter dois parâmetros (referentes à posição e rótulo
+        de um *tick*) e retornar apenas um valor, o qual será utilizado para
+        definir o rótulo do *tick*.
 """
     logging.debug(("Criando estrutura de plotagem com "
                    "{} áreas.".format(subplot_size)))
@@ -314,7 +378,7 @@ def plotChannels(signals, signal_len=None, signal_time=None, save_path=None,
         elemento deve conter um vetor para plotagem. Caso seja utilizado um
         iterador, é necessário passar a quantidade de sinais por meio do
         parâmetro 'signals_len'.
-    signals_len: int (default: None)
+    signal_len: int (default: None)
         necessário quando é utilizado um iterador no parâmetro *signals*,
         representa a quantidade de sinais que serão plotados.
     signal_time: array_like (default: None)
@@ -328,6 +392,8 @@ def plotChannels(signals, signal_len=None, signal_time=None, save_path=None,
         resolução da imagem em dpi (pontos por polegada).
     linewidth: float (default: 1)
         largura da linha plotada (em pontos)
+    events: list de Event (default: None)
+        lista de eventos a serem plotados na barra de eventos.
     **kwargs:
         as palavras chave restantes são propriedades da função
         *defaultPlotStruct*. Ver *defaultPlotStruct* para mais detalhes.
