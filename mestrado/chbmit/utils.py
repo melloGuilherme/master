@@ -36,7 +36,9 @@ def openEDF(edf_path, annot_dict=None):
     -----
     O canal de estímulo ('STI 014') é criado pela biblioteca mne de forma
     automatica, devido à uma replicação do canal T8-P8 na base de dados. Com
-    isso, quando aplicável, este canal de estímulo é removido.
+    isso, quando aplicável, este canal de estímulo é removido. Outro canal
+    removido é o T7-P7 por conter a mesma informação que P7-T7, pois é o mesmo
+    sinal multiplicado por (-1).
 """
     logging.debug("Executando openEDF para {}".format(edf_path))
 
@@ -51,7 +53,7 @@ def openEDF(edf_path, annot_dict=None):
 
     logging.debug("Removendo canal de estímulo criado pela biblioteca mne.")
     try:
-        raw.drop_channels(['STI 014'], copy=False)
+        raw.drop_channels(['STI 014','T7-P7'], copy=False)
         logging.debug("Canal de estímulo removido.")
     except:
         logging.warning("{} não contém canal de estímulo".format(edf_path))
