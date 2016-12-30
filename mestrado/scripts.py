@@ -91,14 +91,34 @@ def execSeizureSignal():
 
     save_dir = argline.OUTPUTDIR if argline.OUTPUTDIR else '.'
 
-    chbmit.utils.defaultScript(f, fpattern, fargs, eargs, 'chb01',
+    chbmit.utils.defaultScript(f, fpattern, fargs, eargs, 'good',
                                save_dir, None)
 
     print "Plotagem das crises da base CHBMIT concluída."
 
 
 def execSignalStatistics():
-    print "TODO: execSignalStatistics."
+    """Plotagem da média e desvio padrão dos sinais utilizando janelas."""
+    import chbmit.signal
+    import chbmit.utils
+
+    argline.config()
+
+    print "Plotando sinais da base CHBMIT."
+    f = chbmit.signal.plotCHBMITSignalStatistic
+    fpattern = '{}_Stat_W{}_H{}.png'
+
+    wsize = [256, 512, 1280, 2560]  # 1, 2, 5, e 10 segundo(s)
+    hop = [128, 256, 640, 256]      # .5, 1, 2.5 e 1 segundo(s)
+    fargs = [(w, h) for w, h in zip(wsize, hop)]
+    eargs = None
+    patients = 'good'
+
+    save_dir = argline.OUTPUTDIR if argline.OUTPUTDIR else '.'
+    chbmit.utils.defaultScript(f, fpattern, fargs, eargs, patients,
+                               save_dir, 'full')
+
+    print "Plotagem Concluída."
 
 
 def execFourier():

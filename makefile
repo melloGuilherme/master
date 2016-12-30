@@ -22,7 +22,7 @@ execute-seizure-signal:
 	@./$(PROJ_BIN)/execSeizureSignal --loglevel=info --logfile=$(INFO_DIR)/execSeizureSignal.log --outputdir=$(RESULTS_DIR)
 
 execute-signal-statistics:
-	echo "TODO"
+	@./$(PROJ_BIN)/execSignalStatistics --loglevel=info --logfile=$(INFO_DIR)/execSignalStatistics.log --outputdir=$(RESULTS_DIR)
 
 execute-fourier:
 	echo "TODO"

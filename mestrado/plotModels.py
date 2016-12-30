@@ -4,6 +4,7 @@
 import collections
 import logging
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib import ticker
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
@@ -486,6 +487,97 @@ def plotSpectrum(signals, xvalues, yvalues, signals_len=None, save_path=None,
         ax.axis('tight')
         cbar = fig.colorbar(im, ax=ax, pad=0.01)
         cbar.ax.tick_params(labelsize=5)
+
+    if save_path is None:
+        logging.debug("Exibindo imagem na tela.")
+        plt.show()
+    else:
+        logging.debug("Salvando imagem em: {}".format(save_path))
+        plt.savefig(save_path, dpi=dpi)
+        plt.close()
+    logging.debug("Finalizando plotagem.")
+
+
+def plotErrorSignal(signals, top_err, bottom_err, signals_len=None, dpi=150,
+                    signal_time=None, save_path=None, linewidth=1, events=None,
+                    **kwargs):
+    """Faz a plotagem de séries temporais, mostrando um intervalo de erro.
+
+    Função responsável pela plotagem de séries temporais de uma dimensão,
+    mostrando um intervalo de erro. Este erro pode ser considerado o desvio
+    padrão (ou a variância), ao plotar uma média ou o sinal.
+
+    Parâmetros:
+    -----------
+    signals: array_like|iterador
+        Se for um array_like, deve conter 2 dimensões. Se for um iterador, cada
+        elemento deve conter um vetor para plotagem. Caso seja utilizado um
+        iterador, é necessário passar a quantidade de sinais por meio do
+        parâmetro 'signals_len'.
+    top_err: array_like|iterador
+        idem ao *signals*. Deve conter, também, a mesma dimensão que *signals*.
+        Para cada elemento em *signals* deve existir um em *top_err*.
+    bottom_err: array_like|iterador
+        idem ao *signals*, Deve conter, também, a mesma dimensão que *signals*.
+        Para cada elemento em *signals* deve existir um em *bottom_err*.
+    signals_len: int (default: None)
+        necessário quando é utilizado um iterador no parâmetro *signals*,
+        representa a quantidade de sinais que serão plotados.
+    dpi: float (default:150)
+        resolução da imagem em dpi (pontos por polegada).
+    signal_time: array_like (default: None)
+        valores da coordenada x, correspondem às ocorrencias do sinal (tempo,
+        frequência). Caso None, será utilizado o número da ocorrência
+        (sequência de números inteiros).
+    save_path: str|None (default: None)
+        caminho para salvar a imagem gerada. Caso não seja passado (None), será
+        plotado na tela com *plt.show()*.
+    linewidth: float (default: 1)
+        largura da linha plotada (em pontos)
+    events: list de Event (default: None)
+        lista de eventos a serem plotados na barra de eventos.
+    **kwargs:
+        as palavras chave restantes são propriedades da função
+        *defaultPlotStruct*. Ver *defaultPlotStruct* para mais detalhes.
+"""
+    if (isinstance(signals, collections.Iterator) and
+            isinstance(top_err, collections.Iterator) and
+            isinstance(bottom_err, collections.Iterator)):
+
+        if signals_len is None:
+            errormsg = ("É necessário passar o tamanho dos sinais utilizando "
+                        "o parâmetro 'signals_len' ({})".format(signals_len))
+            logging.error(errormsg)
+            raise ValueError(errormsg)
+    elif (isinstance(signals, (np.ndarray, list)) and
+          isinstance(top_err, (np.ndarray, list)) and
+          isinstance(bottom_err, (np.ndarray, list))):
+        signals_len = len(signals)
+    else:
+        errormsg = ("Os parâmetros de sinal e de erro devem possuir tipos "
+                    "iguais.")
+        logging.error(errormsg)
+        raise ValueError(errormsg)
+
+    logging.debug("Criando estrutura de eixos de plotagem.")
+    events_len = 0 if events is None else len(events)
+    fig, axes, event_bar = defaultPlotStruct(signals_len,
+                                             events_len=events_len, **kwargs)
+
+    for index, (s, t, b, ax) in enumerate(zip(signals, top_err, bottom_err,
+                                              axes)):
+        logging.debug("Plotando sobre eixo {}.".format(index))
+
+        if signal_time is None:
+            signal_time = range(len(s))
+
+        ax.plot(signal_time, s, color='g', linewidth=linewidth)
+        ax.fill_between(signal_time, t, b, alpha=0.35, edgecolor='g',
+                        facecolor='y', linewidth=linewidth)
+
+    if event_bar and events:
+        xlim = axes[-1].get_xlim()
+        plotEventBar(event_bar, events, xlim)
 
     if save_path is None:
         logging.debug("Exibindo imagem na tela.")

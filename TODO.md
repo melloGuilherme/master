@@ -3,9 +3,9 @@
 ## Plotagens:
 - [x] Reestruturar o código em mestrado/xchbmit.py
 - [x] Verificar os arquivos das Bases de dados
-- [ ] Plotar os sinais (inteiro, em janelas e as crises);
-- [ ] Plotar o comportamento da média e do desvio padrão utilizando janelas
-  deslizantes;
+- [x] Plotar os sinais (inteiro, em janelas e as crises);
+- [x] Plotar o comportamento da média e do desvio padrão utilizando janelas
+  deslizantes (para todo o sinal e para os momentos de crise);
 - [ ] Plotar FT
 - [ ] Plotar STFT
 - [ ] Plotar Wavelet
@@ -13,13 +13,8 @@
 - [ ] Plotar WS (Wavelet Entropy -- Shannon)
 - [ ] Escrever um relatório
 
-## DOING: Plotagem de sinais
-- [x] Plotar o sinal inteiro
-- [x] Plotar o sinal em janelas (default: 10min)
-- [ ] Plotar o sinal mostrando o momento da crise, utilizando intervalos antes
-  e depois (default: 1min)
-- [ ] Documentar código de plotagem do sinal
-- [ ] Verificar documentação dos códigos de plotagem (plotModels)
+## DOING: Plotagem FT
+- [ ] Arrumar script anterior
 
 ## ASAP:
 - [ ] Verificar escala de cores na plotagem dos espectros

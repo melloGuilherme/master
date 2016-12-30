@@ -230,3 +230,90 @@ def plotCHBMITSizures(raw, file_pattern, ext_args=None):
                           signal_time=signal_time, ytick_bins=4,
                           linewidth=0.2, xtick_size=2, ytick_size=2,
                           dpi=600, borderwidth=0.2, save_path=save_path)
+
+
+def plotCHBMITSignalStatistic(raw, fpattern, wsize, hop, ext_args=None):
+    """Plotagem da evolução da média e do desvio padrão utilizando janelas.
+
+    Parâmetros:
+    -----------
+    raw: mne.Raw
+        objeto *Raw*, da biblioteca *mne*, contendo as informações do sinal.
+    file_pattern: str
+        string contendo o padrão para salvar os arquivos gerados.
+    wsize: int
+        tamanho da janela utilizada para plotar os sinais (em amostras).
+    ext_args: não é utilizado (default: None)
+        parâmetro utilizado para a função seja compatível com *defaultScript*.
+    """
+    # define os índices de limites das janelas
+    signal_len = len(raw)
+    ws_index = range(0, signal_len-wsize+1, hop)
+    wf_index = range(wsize, signal_len+1, hop)
+
+    # gerando evento
+    events = None
+    if raw.annotations:
+        annot = raw.annotations
+        elabel = annot.description[0]
+        estart = annot.onset*raw.info['sfreq']
+        eend = annot.duration*raw.info['sfreq'] + estart
+        events = [pltm.createEvent('Seizure', estart, eend, 'red')]
+
+    # cálculo dos dados para plotagem
+    data = raw._data
+    avg = np.mean(data, axis=0)
+
+    # vetores para armazenar os resultados
+    mean = [[] for i in range(len(data)+1)]
+    std = [[] for i in range(len(data)+1)]
+    windex = []
+
+    # cálculo da média e desvio padrão usando janelas deslizantes
+    for ws, wf in zip(ws_index, wf_index):
+        wi = int((ws+wf)/2)
+        logging.debug("Executando janela({}) {} -- {}".format(wi, ws, wf))
+
+        windex.append(wi)
+
+        # pega apenas os valores dentro da janela
+        window = np.append(data[:, ws:wf], [avg[ws:wf]], axis=0)
+
+        # cálculo da média e desvio padrão da janela
+        wmean = np.mean(window, axis=1)
+        wstd = np.std(window, axis=1)
+
+        for i, (m, s) in enumerate(zip(wmean, wstd)):
+            mean[i].append(m)
+            std[i].append(s)
+
+    mean = np.array(mean)
+    std = np.array(std)
+
+    logging.debug(("Definindo função de formatação dos rótulos dos traços "
+                   "nos eixos x e y."))
+
+    def y_fmt(x, y):
+        return "{}$\mu$V".format(int(x*1e6))
+
+    def x_fmt(x, y):
+        s, r = divmod(x, raw.info['sfreq'])     # segundos
+        ms = r/float(raw.info['sfreq'])         # milissegundos
+        m, s = divmod(int(s), 60)               # minutos
+        h, m = divmod(m, 60)                    # hora
+        return "{:02d}:{:02d}:{:02.3f}".format(h, m, (s+ms))
+
+    save_path = fpattern.format(wsize, hop)
+    flabel = pm.extractFileLabel(save_path)
+    logging.info("Gerando plot para {}.".format(flabel))
+    title = "Signal Mean and Standard Deviation: {}".format(flabel)
+
+    ylabels = raw.ch_names
+    ylabels.append('AVG')
+    xlabel = 'Time'
+
+    pltm.plotErrorSignal(mean, std, std*(-1), sharey=True, linewidth=0.1,
+                         events=events, title=title, ylabel=ylabels,
+                         xlabel=xlabel, xformatter=x_fmt, signal_time=windex,
+                         yformatter=y_fmt, xtick_size=2, ytick_size=2,
+                         dpi=600, borderwidth=0.2, save_path=save_path)
