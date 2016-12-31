@@ -122,15 +122,27 @@ def execSignalStatistics():
 
 
 def execFourier():
-    print "TODO: execFourier."
-    # """Executa a transformada de Fourier nas bases de dados."""
-    # argline.config()
+    """Executa a transformada de Fourier nas bases de dados."""
+    import chbmit.fourier
+    import chbmit.utils
 
-    # print "Iniciando Transformada de Fourier."
+    argline.config()
 
-    # print "Executando base de dados CHBMIT."
-    # sp = argline.OUTPUTDIR if argline.OUTPUTDIR else '.'
-    # chbmit.applyFourier(patients='good', save_path=sp, exec_mode='full')
+    print "Iniciando Transformada de Fourier."
+
+    print "Executando base de dados CHBMIT."
+    f = chbmit.fourier.applyFourier
+    fpattern = '{}_FT{}.png'
+    patients = 'good'
+    fargs = None
+    eargs = [('',), ('1Delta',), ('2Theta',),
+             ('3Alpha',), ('4Beta',), ('5Gamma',)]
+
+    save_dir = argline.OUTPUTDIR if argline.OUTPUTDIR else '.'
+    chbmit.utils.defaultScript(f, fpattern, fargs, eargs, patients, save_dir,
+                               exec_mode='full')
+
+    print "Plotagem da Transformada de Fourier concluída."
 
 
 def execSTFT():

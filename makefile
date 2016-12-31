@@ -25,8 +25,7 @@ execute-signal-statistics:
 	@./$(PROJ_BIN)/execSignalStatistics --loglevel=info --logfile=$(INFO_DIR)/execSignalStatistics.log --outputdir=$(RESULTS_DIR)
 
 execute-fourier:
-	echo "TODO"
-	#@./$(PROJ_BIN)/execFourier --loglevel=info --logfile=$(INFO_DIR)/execFourier.log --outputdir=$(INFO_DIR)
+	@./$(PROJ_BIN)/execFourier --loglevel=info --logfile=$(INFO_DIR)/execFourier.log --outputdir=$(RESULTS_DIR)
 
 execute-stft:
 	echo "TODO"

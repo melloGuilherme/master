@@ -53,7 +53,7 @@ def openEDF(edf_path, annot_dict=None):
 
     logging.debug("Removendo canal de estímulo criado pela biblioteca mne.")
     try:
-        raw.drop_channels(['STI 014','T7-P7'], copy=False)
+        raw.drop_channels(['STI 014', 'T7-P7'], copy=False)
         logging.debug("Canal de estímulo removido.")
     except:
         logging.warning("{} não contém canal de estímulo".format(edf_path))
@@ -372,6 +372,10 @@ def _configFullExecution(pattern, plabels, edf_dict, args, ext_args=None):
                     else:
                         f = pattern.format(plabel, edf_label, *arg)
                         files.append(f)
+            elif ext_args:
+                for earg in ext_args:
+                    f = pattern.format(plabel, edf_label, *earg)
+                    files.append(f)
             else:
                 f = pattern.format(plabel, edf_label)
                 files.append(f)
