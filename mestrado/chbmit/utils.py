@@ -527,6 +527,9 @@ def defaultScript(func, fname_pat, fargs, ext_args=None, patients='good',
             else:
                 func(raw, file_pattern, ext_args=ext_args, **kwargs)
 
+            # removendo referências
+            del raw
+
     # TODO: Melhorar a verificação de arquivos gerados (código muito ruim)
     logging.info("Verificando existência de arquivos criados.")
     for plabel in plabels:

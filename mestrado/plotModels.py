@@ -5,6 +5,7 @@ import collections
 import logging
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import colors
 from matplotlib import ticker
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
@@ -435,8 +436,8 @@ def plotChannels(signals, signal_len=None, signal_time=None, save_path=None,
     logging.debug("Finalizando plotagem.")
 
 
-def plotSpectrum(signals, xvalues, yvalues, signals_len=None, save_path=None,
-                 dpi=150, **kwargs):
+def plotSpectrum(signals, xvalues, yvalues, signal_len=None, save_path=None,
+                 dpi=150, events=None, **kwargs):
     """Faz a plotagem de uma imagem, na forma de mapa de cores.
 
     Função responsável pela plotagem dos espectros de potência com duas
@@ -454,7 +455,7 @@ def plotSpectrum(signals, xvalues, yvalues, signals_len=None, save_path=None,
         vetor com valores do eixo x (componente de tempo da STFT).
     yvalues: array_like
         vetor com valores do eixo y (componentes de frequência da STFT).
-    signals_len: int (default: None)
+    signal_len: int (default: None)
         necessário quando é utilizado um iterador no parâmetro *signals*,
         representa a quantidade de sinais que serão plotados.
     save_path: str (default:None)
@@ -462,31 +463,40 @@ def plotSpectrum(signals, xvalues, yvalues, signals_len=None, save_path=None,
         plotado na tela com *plt.show()*.
     dpi: float (default:150)
         resolução da imagem em dpi (pontos por polegada).
+    events: list de Event (default: None)
+        lista de eventos a serem plotados na barra de eventos.
     **kwargs:
         as palavras chave restantes são propriedades da função
         *defaultPlotStruct*. Ver *defaultPlotStruct* para mais detalhes.
 """
-    if isinstance(signals, collections.Iterator) and signal_len is None:
-        errormsg = ("Para o parâmetro 'signals' ({}) é necessário passar o "
-                    "tamanho utilizando o parâmetro 'signals_len' ({})"
-                    "".format(type(signals), signals_len))
-        logging.error(errormsg)
-        raise ValueError(errormsg)
+    if isinstance(signals, collections.Iterator):
+        if signal_len is None:
+            errormsg = ("Para o parâmetro 'signals' ({}) é necessário passar "
+                        "o tamanho utilizando o parâmetro 'signals_len' ({})"
+                        "".format(type(signals), signal_len))
+            logging.error(errormsg)
+            raise ValueError(errormsg)
     else:
-        signals_len = len(signals)
+        signal_len = len(signals)
 
     logging.debug("Criando estrutura de eixos de plotagem.")
-    fig, axes = defaultPlotStruct(signals_len, **kwargs)
+    events_len = 0 if events is None else len(events)
+    fig, axes, event_bar = defaultPlotStruct(signal_len, events_len=events_len,
+                                             **kwargs)
 
     # TODO: axes.flat dá erro quando tem apenas 1 eixo de plotagem
     for index, (s, ax) in enumerate(zip(signals, axes.flat)):
         logging.debug("Plotando sobre eixo {}.".format(index))
-        from matplotlib import colors
-        im = ax.pcolormesh(xvalues, yvalues, s, cmap='RdBu_r',
-                           norm=colors.PowerNorm(gamma=0.5))
+        pcm = ax.pcolormesh(xvalues, yvalues, s, cmap='RdBu_r',
+                            norm=colors.PowerNorm(gamma=0.3))
         ax.axis('tight')
-        cbar = fig.colorbar(im, ax=ax, pad=0.01)
-        cbar.ax.tick_params(labelsize=5)
+        #cbar = fig.colorbar(pcm, ax=ax, extend='both', orientation='vertical',
+        #                     pad=0.01)
+        #cbar.ax.tick_params(labelsize=5)
+
+    if event_bar and events:
+        xlim = axes[-1].get_xlim()
+        plotEventBar(event_bar, events, xlim)
 
     if save_path is None:
         logging.debug("Exibindo imagem na tela.")

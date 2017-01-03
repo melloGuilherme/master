@@ -28,4 +28,13 @@ execute-fourier:
 	@./$(PROJ_BIN)/execFourier --loglevel=info --logfile=$(INFO_DIR)/execFourier.log --outputdir=$(RESULTS_DIR)
 
 execute-stft:
+	@./$(PROJ_BIN)/execSTFT --loglevel=info --logfile=$(INFO_DIR)/execSTFT.log --outputdir=$(RESULTS_DIR)
+
+execute-wt:
+	echo "TODO"
+
+execute-rwe:
+	echo "TODO"
+
+execute-ws:
 	echo "TODO"

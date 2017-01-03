@@ -6,15 +6,17 @@
 - [x] Plotar os sinais (inteiro, em janelas e as crises);
 - [x] Plotar o comportamento da média e do desvio padrão utilizando janelas
   deslizantes (para todo o sinal e para os momentos de crise);
-- [ ] Plotar FT
-- [ ] Plotar STFT
+- [x] Plotar FT
+- [x] Plotar STFT
 - [ ] Plotar Wavelet
 - [ ] Plotar RWE (Relative Wavelet Energy)
 - [ ] Plotar WS (Wavelet Entropy -- Shannon)
 - [ ] Escrever um relatório
 
-## DOING: Plotagem FT
-- [ ] Arrumar script anterior
+## DOING: Plotagem WT
+- [ ] Ver o funcionamento da biblioteca
+- [ ] Implementar a função para executar sobre *raw*
+- [ ] Implementar script
 
 ## ASAP:
 - [ ] Verificar escala de cores na plotagem dos espectros
@@ -59,3 +61,5 @@
   plotagem, porém some com os ticks das outras áreas.
 - [ ] mestrado.plotModels.plotSpectrum: axes.flat está dando erro quando tem
   apenas um eixo para plotagem.
+- [ ] mestrado.plotModels.plotSpectrum: é preciso incluir a barra de cores,
+  porém, a barra de eventos deve ser tratada para alinhar com os subplots.

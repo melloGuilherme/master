@@ -146,7 +146,27 @@ def execFourier():
 
 
 def execSTFT():
-    print "TODO: execSTFT."
+    """Executa a transformada curta de fourier (STFT) nas bases de dados."""
+    import chbmit.fourier
+    import chbmit.utils
+
+    argline.config()
+
+    print "Iniciando Execução: STFT."
+    print "Processando base de dados: CHBMIT."
+    f = chbmit.fourier.applySTFT
+    fpattern = '{}_STFT_W{}_H{}{}.png'
+    w = [128, 256, 640, 1280, 2560]   # janelas de 0.5, 1, 2.5, 5 e 10 segundos
+    h = [ 64, 128, 320,  640, 512]    # deslocamento entre janelas
+    fargs = [(k, j) for k, j in zip(w, h)]
+    eargs = [('',), ('_0~20Hz',)]
+    patients = 'good'
+
+    save_dir = argline.OUTPUTDIR if argline.OUTPUTDIR else '.'
+    chbmit.utils.defaultScript(f, fpattern, fargs, eargs, patients, save_dir,
+                               exec_mode='full')
+
+    print "Finalizando Execução: STFT."
 
 
 def execWT():
