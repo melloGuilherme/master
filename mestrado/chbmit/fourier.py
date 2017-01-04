@@ -199,8 +199,9 @@ def applySTFT(raw, fpattern, wsize, hop, ext_args=None, window='hann'):
     findex = [(0, len(freq)), (0, np.where(freq == 20)[0][0]+1)]
 
     for earg, (fsi, fei) in zip(ext_args, findex):
-        save_path = fpattern.format(wsize, hop, earg)
+        save_path = fpattern.format(wsize, hop, earg) if fpattern else None
         title = title_pattern.format(earg)
+
         logging.info("Gerando plot: {}".format(save_path))
         pltm.plotSpectrum(pspect[:,fsi:fei], t, freq[fsi:fei], dpi=600,
                           save_path=save_path, events=events, xlabel=xlabel,
