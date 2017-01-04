@@ -487,11 +487,11 @@ def plotSpectrum(signals, xvalues, yvalues, signal_len=None, save_path=None,
     # TODO: axes.flat dá erro quando tem apenas 1 eixo de plotagem
     for index, (s, ax) in enumerate(zip(signals, axes.flat)):
         logging.debug("Plotando sobre eixo {}.".format(index))
-        pcm = ax.pcolormesh(xvalues, yvalues, s, cmap='RdBu_r',
-                            norm=colors.PowerNorm(gamma=0.3))
+        pcm = ax.pcolormesh(xvalues, yvalues, s, cmap='hot', norm=colors.PowerNorm(gamma=0.14))
+        # cmap=hot, gamma=0.14
+        # cmap=jet, gamma=0.05
         ax.axis('tight')
-        #cbar = fig.colorbar(pcm, ax=ax, extend='both', orientation='vertical',
-        #                     pad=0.01)
+        #cbar = fig.colorbar(pcm, ax=ax, extend='both', pad=0.1)
         #cbar.ax.tick_params(labelsize=5)
 
     if event_bar and events:
