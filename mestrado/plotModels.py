@@ -437,7 +437,7 @@ def plotChannels(signals, signal_len=None, signal_time=None, save_path=None,
 
 
 def plotSpectrum(signals, xvalues, yvalues, signal_len=None, save_path=None,
-                 dpi=150, events=None, **kwargs):
+                 dpi=150, events=None, norm=None, **kwargs):
     """Faz a plotagem de uma imagem, na forma de mapa de cores.
 
     Função responsável pela plotagem dos espectros de potência com duas
@@ -465,6 +465,8 @@ def plotSpectrum(signals, xvalues, yvalues, signal_len=None, save_path=None,
         resolução da imagem em dpi (pontos por polegada).
     events: list de Event (default: None)
         lista de eventos a serem plotados na barra de eventos.
+    norm: matplotlib.colors.Normalize (default: PowerNorm)
+        objeto para normalização do plot
     **kwargs:
         as palavras chave restantes são propriedades da função
         *defaultPlotStruct*. Ver *defaultPlotStruct* para mais detalhes.
@@ -487,7 +489,7 @@ def plotSpectrum(signals, xvalues, yvalues, signal_len=None, save_path=None,
     # TODO: axes.flat dá erro quando tem apenas 1 eixo de plotagem
     for index, (s, ax) in enumerate(zip(signals, axes.flat)):
         logging.debug("Plotando sobre eixo {}.".format(index))
-        pcm = ax.pcolormesh(xvalues, yvalues, s, cmap='hot', norm=colors.PowerNorm(gamma=0.14))
+        pcm = ax.pcolormesh(xvalues, yvalues, s, cmap='hot', norm=norm)
         # cmap=hot, gamma=0.14
         # cmap=jet, gamma=0.05
         ax.axis('tight')

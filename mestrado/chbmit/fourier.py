@@ -7,6 +7,7 @@ import numpy as np
 
 from mestrado import pathManipulation as pm
 from mestrado import plotModels as pltm
+from matplotlib import colors
 from scipy import signal
 
 
@@ -202,13 +203,15 @@ def applySTFT(raw, fpattern, wsize, hop, ext_args=None, window='hann'):
         save_path = fpattern.format(wsize, hop, earg) if fpattern else None
         title = title_pattern.format(earg)
 
+        norm = colors.PowerNorm(gamma=0.14)
         logging.info("Gerando plot: {}".format(save_path))
         pltm.plotSpectrum(pspect[:,fsi:fei], t, freq[fsi:fei], dpi=600,
                           save_path=save_path, events=events, xlabel=xlabel,
                           ylabel=ylabel_list, ytickline_visible=True,
                           yticklabel_visible=True, ytick_bins=5, figsize=None,
                           yformatter=y_fmt, title=title, xformatter=x_fmt,
-                          borderwidth=0.2, xtick_size=1, ytick_size=1)
+                          borderwidth=0.2, xtick_size=1, ytick_size=1,
+                          norm=norm)
 
         logging.debug("Imagem salva em {}".format(save_path))
 
