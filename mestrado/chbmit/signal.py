@@ -26,12 +26,9 @@ def plotCHBMITSignal(raw, file_pattern, ext_args=None):
     """
     logging.debug("Executando plotagem do sinal.")
 
-    logging.debug("Calculando média dos canais.")
-    avg = np.mean(raw._data, axis=0)
-
     logging.debug("Criando lista (iterador) com canais e média.")
-    channel_list = itt.chain(raw._data, [avg])
-    channel_len = len(raw._data) + 1
+    channel_list = itt.chain(raw._data)
+    channel_len = len(raw._data)
 
     logging.debug("Criando marcações de eventos (crises).")
     events = None
@@ -49,8 +46,7 @@ def plotCHBMITSignal(raw, file_pattern, ext_args=None):
     logging.debug("Gerando plot para {}.".format(edf_label))
     title = "Signal {}".format(edf_label)
     ylabels = raw.ch_names
-    ylabels.append('AVG')
-    xlabel = 'Time [minutes]'
+    xlabel = 'Time [Hours]'
 
     def y_fmt(x, y):
         return "{}$\mu$V".format(int(x*1e6))
