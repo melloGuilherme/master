@@ -16,7 +16,7 @@ execute-signal:
 	@./$(PROJ_BIN)/execSignal --loglevel=info --logfile=$(INFO_DIR)/execSignal.log --outputdir=$(RESULTS_DIR)/signal
 
 execute-wsignal:
-	@./$(PROJ_BIN)/execWindowedSignal --loglevel=info --logfile=$(INFO_DIR)/execWindowedSignal.log --outputdir=$(RESULTS_DIR)
+	@./$(PROJ_BIN)/execWindowedSignal --loglevel=info --logfile=$(INFO_DIR)/execWindowedSignal.log --outputdir=$(RESULTS_DIR)/wsignal
 
 execute-seizure-signal:
 	@./$(PROJ_BIN)/execSeizureSignal --loglevel=info --logfile=$(INFO_DIR)/execSeizureSignal.log --outputdir=$(RESULTS_DIR)

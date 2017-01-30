@@ -102,13 +102,12 @@ def plotCHBMITWindowedSignals(raw, file_pattern, wsize, ext_args=None):
 
     # cálculo dos dados para plotagem
     data = raw._data
-    avg = np.mean(data, axis=0)
 
     for ws, wf in zip(ws_index, wf_index):
         logging.info("Executando janela: {} -- {}".format(ws, wf))
         # pega apenas os valores dentro da janela
-        window = itt.chain(data[:, ws:wf], [avg[ws:wf]])
-        window_size = len(data) + 1
+        window = itt.chain(data[:, ws:wf])
+        window_size = len(data)
 
         wevents = []
         for ev in events or []:
@@ -129,17 +128,13 @@ def plotCHBMITWindowedSignals(raw, file_pattern, wsize, ext_args=None):
             h, m = divmod(m, 60)                    # hora
             return "{:02d}:{:02d}:{:02.3f}".format(h, m, (s+ms))
 
-        # TODO: melhorar isso aqui ----v
-        save_path = file_pattern.format(int(float(x_fmt(wsize, 0))),
-                                        int(float(x_fmt(ws, 0))),
-                                        int(float(x_fmt(wf, 0))))
+        save_path = file_pattern.format(wsize, ws, wf)
         flabel = pm.extractFileLabel(save_path)
         logging.info("Gerando plot para {}.".format(flabel))
         title = "Signal {}".format(flabel)
 
         ylabels = raw.ch_names
-        ylabels.append('AVG')
-        xlabel = 'Time [minutes]'
+        xlabel = 'Time [Hours]'
         signal_time = range(ws, wf)
 
         pltm.plotChannels(window, window_size, events=wevents, linewidth=0.1,
