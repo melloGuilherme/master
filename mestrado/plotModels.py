@@ -486,6 +486,8 @@ def plotSpectrum(signals, xvalues, yvalues, signal_len=None, save_path=None,
     fig, axes, event_bar = defaultPlotStruct(signal_len, events_len=events_len,
                                              **kwargs)
 
+    axes = np.array([axes]) if signal_len == 1 else axes
+
     # TODO: axes.flat dá erro quando tem apenas 1 eixo de plotagem
     for index, (s, ax) in enumerate(zip(signals, axes.flat)):
         logging.debug("Plotando sobre eixo {}.".format(index))
