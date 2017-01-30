@@ -419,8 +419,10 @@ def plotChannels(signals, signal_len=None, signal_time=None, save_path=None,
         logging.debug("Plotando sobre eixo {}.".format(index))
         if signal_time is None:
             ax.plot(s, linewidth=linewidth)
+            ax.set_xlim(0, len(s)+1)
         else:
             ax.plot(signal_time, s, linewidth=linewidth)
+            ax.set_xlim(signal_time[0], signal_time[-1])
 
     if event_bar and events:
         xlim = axes[-1].get_xlim()
