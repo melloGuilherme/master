@@ -173,7 +173,6 @@ def plotCHBMITSizures(raw, file_pattern, ext_args=None):
     eend = annot.duration*raw.info['sfreq'] + estart
 
     data = raw._data
-    avg = np.mean(data, axis=0)
     for idx, (start, end) in enumerate(zip(estart, eend)):
         # selecionando até 30s antes da crise
         ws = start - raw.info['sfreq']*60
@@ -185,11 +184,10 @@ def plotCHBMITSizures(raw, file_pattern, ext_args=None):
 
         # extrai a janela para plotagem
         window = data[:, ws:wf]
-        wavg = avg[ws:wf]
 
         # cria iterado para plotagem
-        signals = itt.chain(window, [wavg])
-        signals_len = len(window) + 1
+        signals = itt.chain(window)
+        signals_len = len(window)
 
         # cria um evento contendo apenas uma crise
         event = pltm.createEvent(elabel, [start], [end], 'red')
@@ -200,7 +198,6 @@ def plotCHBMITSizures(raw, file_pattern, ext_args=None):
         title = pm.extractFileLabel(title)
         xlabel = "Time"
         ylabels = raw.ch_names
-        ylabels.append('AVG')
         signal_time = range(ws, wf)
         save_path = file_pattern.format(idx, '{}s'.format(sd))
 
