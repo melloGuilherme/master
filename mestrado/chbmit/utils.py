@@ -53,7 +53,7 @@ def openEDF(edf_path, annot_dict=None):
 
     logging.debug("Removendo canal de estímulo criado pela biblioteca mne.")
     try:
-        raw.drop_channels(['STI 014', 'T7-P7'], copy=False)
+        raw = raw.drop_channels(['STI 014', 'T7-P7'])
         logging.debug("Canal de estímulo removido.")
     except:
         logging.warning("{} não contém canal de estímulo".format(edf_path))
